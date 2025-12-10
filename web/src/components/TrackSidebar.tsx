@@ -1,13 +1,17 @@
+// TrackSidebar.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-export default function TrackSidebar() {
-  const path = usePathname();
-  const [open, setOpen] = useState(false);
+type TrackNavContentProps = {
+  path: string;
+  onClose?: () => void;
+};
 
+// ✅ Top-level component
+function TrackNavContent({ path, onClose }: TrackNavContentProps) {
   const isActive = (p: string) =>
     path === p || (p !== "/track" && path.startsWith(p));
 
@@ -19,8 +23,11 @@ export default function TrackSidebar() {
         : "text-gray-700 hover:bg-gray-100 hover:text-[#A259FF]"
     }`;
 
-  // Sidebar Content (used by both mobile + desktop)
-  const NavContent = () => (
+  const handleLinkClick = () => {
+    if (onClose) onClose();
+  };
+
+  return (
     <>
       {/* Header */}
       <h2 className="text-base sm:text-lg font-extrabold text-[#A259FF] mb-4">
@@ -31,7 +38,7 @@ export default function TrackSidebar() {
         <Link
           href="/track/materials"
           className={linkClass("/track/materials")}
-          onClick={() => setOpen(false)}
+          onClick={handleLinkClick}
         >
           📄 View Material Details
         </Link>
@@ -39,7 +46,7 @@ export default function TrackSidebar() {
         <Link
           href="/track/scan"
           className={linkClass("/track/scan")}
-          onClick={() => setOpen(false)}
+          onClick={handleLinkClick}
         >
           📷 Scan Material QR
         </Link>
@@ -47,7 +54,7 @@ export default function TrackSidebar() {
         <Link
           href="/track/profile"
           className={linkClass("/track/profile")}
-          onClick={() => setOpen(false)}
+          onClick={handleLinkClick}
         >
           👤 Profile
         </Link>
@@ -55,7 +62,7 @@ export default function TrackSidebar() {
         <Link
           href="/logout"
           className={linkClass("/logout")}
-          onClick={() => setOpen(false)}
+          onClick={handleLinkClick}
         >
           🚪 Logout
         </Link>
@@ -66,6 +73,11 @@ export default function TrackSidebar() {
       </p>
     </>
   );
+}
+
+export default function TrackSidebar() {
+  const path = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -119,7 +131,7 @@ export default function TrackSidebar() {
             ${open ? "translate-x-0" : "-translate-x-full"}
           `}
         >
-          <NavContent />
+          <TrackNavContent path={path} onClose={() => setOpen(false)} />
         </aside>
       </div>
 
@@ -132,7 +144,7 @@ export default function TrackSidebar() {
           shadow-xl p-5 flex-col z-30 rounded-tr-2xl
         "
       >
-        <NavContent />
+        <TrackNavContent path={path} />
       </aside>
     </>
   );
