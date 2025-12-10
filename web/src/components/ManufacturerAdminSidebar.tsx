@@ -1,3 +1,4 @@
+// ManufacturerAdminSidebar.tsx
 "use client";
 
 import Link from "next/link";
@@ -6,12 +7,20 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/shared/firebaseConfig";
 import { useState } from "react";
 
-export default function ManufacturerAdminSidebar() {
-  const path = usePathname();
-  const router = useRouter();
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [open, setOpen] = useState(false);
+type NavContentProps = {
+  path: string | null;
+  loggingOut: boolean;
+  onLogout: () => void;
+  onClose?: () => void;
+};
 
+// ✅ Top-level component, not defined inside render
+function NavContent({
+  path,
+  loggingOut,
+  onLogout,
+  onClose,
+}: NavContentProps) {
   const isActive = (href: string) =>
     path === href || (path?.startsWith(href) && href !== "/manufacturer/admin");
 
@@ -23,18 +32,11 @@ export default function ManufacturerAdminSidebar() {
         : "text-gray-700 hover:bg-[#F2E6FF] hover:text-[#A259FF]"
     }`;
 
-  async function handleLogout() {
-    try {
-      setLoggingOut(true);
-      await signOut(auth);
-      router.push("/manufacturer/login");
-    } catch (err) {
-      console.error(err);
-      setLoggingOut(false);
-    }
-  }
+  const handleNavClick = () => {
+    if (onClose) onClose();
+  };
 
-  const NavContent = () => (
+  return (
     <>
       {/* Header */}
       <div className="mb-4 sm:mb-6">
@@ -51,7 +53,7 @@ export default function ManufacturerAdminSidebar() {
         <Link
           href="/manufacturer/admin/dashboard"
           className={linkStyle("/manufacturer/admin/dashboard")}
-          onClick={() => setOpen(false)}
+          onClick={handleNavClick}
         >
           📊 Admin Dashboard
         </Link>
@@ -59,7 +61,7 @@ export default function ManufacturerAdminSidebar() {
         <Link
           href="/manufacturer/admin/employees"
           className={linkStyle("/manufacturer/admin/employees")}
-          onClick={() => setOpen(false)}
+          onClick={handleNavClick}
         >
           👥 Employees
         </Link>
@@ -67,7 +69,7 @@ export default function ManufacturerAdminSidebar() {
         <Link
           href="/manufacturer/admin/materials"
           className={linkStyle("/manufacturer/admin/materials")}
-          onClick={() => setOpen(false)}
+          onClick={handleNavClick}
         >
           🧩 All Materials
         </Link>
@@ -76,7 +78,7 @@ export default function ManufacturerAdminSidebar() {
       {/* Footer */}
       <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-100">
         <button
-          onClick={handleLogout}
+          onClick={onLogout}
           disabled={loggingOut}
           className="
             w-full flex items-center justify-center gap-2 
@@ -96,6 +98,24 @@ export default function ManufacturerAdminSidebar() {
       </div>
     </>
   );
+}
+
+export default function ManufacturerAdminSidebar() {
+  const path = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  async function handleLogout() {
+    try {
+      setLoggingOut(true);
+      await signOut(auth);
+      router.push("/manufacturer/login");
+    } catch (err) {
+      console.error(err);
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <>
@@ -149,7 +169,12 @@ export default function ManufacturerAdminSidebar() {
             ${open ? "translate-x-0" : "-translate-x-full"}
           `}
         >
-          <NavContent />
+          <NavContent
+            path={path}
+            loggingOut={loggingOut}
+            onLogout={handleLogout}
+            onClose={() => setOpen(false)}
+          />
         </aside>
       </div>
 
@@ -167,7 +192,11 @@ export default function ManufacturerAdminSidebar() {
           rounded-tr-2xl
         "
       >
-        <NavContent />
+        <NavContent
+          path={path}
+          loggingOut={loggingOut}
+          onLogout={handleLogout}
+        />
       </aside>
     </>
   );
